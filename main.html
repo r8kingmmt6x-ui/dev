@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GC Keys</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white">
+
+<div id="header"></div>
+
+<pre id="api-output" class="bg-gray-900 text-green-400 p-4 m-4 rounded max-w-4xl overflow-auto"></pre>
+
+<script type="text/javascript">
+document.addEventListener("DOMContentLoaded", function() {
+
+  function renderHeader() {
+    return `
+      <header class="border-b border-slate-700/50 backdrop-blur-sm bg-black/20">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onclick="window.location.href='/'">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center font-bold text-white">GC</div>
+            <h1 class="text-2xl font-bold text-white">GC Keys</h1>
+          </div>
+          <!-- Top right stats -->
+          <div class="flex items-center gap-6">
+            <div class="text-center">
+              <div id="sales-count" class="text-xl font-bold text-white">0</div>
+              <div class="text-xs text-slate-400 uppercase tracking-wide">Sales</div>
+            </div>
+            <div class="text-center">
+              <div id="buyers-count" class="text-xl font-bold text-white">0</div>
+              <div class="text-xs text-slate-400 uppercase tracking-wide">Buyers</div>
+            </div>
+            <div class="text-center">
+              <div id="rating-count" class="text-xl font-bold text-white">0</div>
+              <div class="text-xs text-slate-400 uppercase tracking-wide">Rating</div>
+            </div>
+          </div>
+        </div>
+      </header>
+    `;
+  }
+
+  document.getElementById("header").innerHTML = renderHeader();
+
+  async function loadShopStats() {
+    const shopId = 165518; // Replace with your real shop ID
+    const token = "5193624|6jF3TihwCm1HzoeyEz9hew0QRyOf85maO0NCzJWD0be20400"; // Replace with your API key
+
+    try {
+      const res = await fetch(`https://api.sellauth.com/v1/shops/${shopId}/stats`, {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const data = await res.json();
+
+      // Display the raw JSON for debugging
+      document.getElementById("api-output").textContent = JSON.stringify(data, null, 2);
+
+      // Map fields safely
+      const sales = data.products_sold ?? "-";
+      const buyers = data.total_customers ?? "-";
+      const rating = data.average_rating ?? "-";
+
+      document.getElementById("sales-count").textContent = sales;
+      document.getElementById("buyers-count").textContent = buyers;
+      document.getElementById("rating-count").textContent = rating;
+
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      document.getElementById("api-output").textContent = "Error fetching data:\n" + err;
+      document.getElementById("sales-count").textContent = "-";
+      document.getElementById("buyers-count").textContent = "-";
+      document.getElementById("rating-count").textContent = "-";
+    }
+  }
+
+  // Load immediately
+  loadShopStats();
+
+  // Auto-update every 30 seconds
+  setInterval(loadShopStats, 30000);
+
+});
+</script>
+
+</body>
+</html>
